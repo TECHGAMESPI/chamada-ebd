@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Formatar cada arquivo alterado usando o Laravel Pint
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep ".php\{0,1\}$") || true
+
+for FILE in $STAGED_FILES
+do
+    ./vendor/bin/pint "${FILE}" > /dev/null >&1;
+    git add "${FILE}";
+done;
+
+exit 0;

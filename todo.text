@@ -1,0 +1,9 @@
+1- A liberação do aluno para realização da prova será feita mediante a presença dele no dia da prova. Caso ele n tenha tido a presença registrada. O botão de iniciar a prova não será exibido;
+2- O resultado da prova será calculado pelo Quiz e não pelo agenamento (porque irão ter vários agentamentos para a mesma prova);
+3- O resultado da prova só será visivel para quem criou o Quiz ou perfis de administradores;
+ FD- O resultado da prova será exibido em uma tabela com as seguintes colunas:
+    - Nome do aluno;
+    - Data de realização da prova;
+    - Nota do aluno;
+    - Status da prova (Aprovado ou Reprovado);
+    - Ações (Visualizar, Editar, Excluir);

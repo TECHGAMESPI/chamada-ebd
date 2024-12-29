@@ -1,0 +1,13 @@
+{
+    "short_name": "Chamada EBD",
+    "name": "Chamada EBD",
+    "icons": [{
+        "src": "images/logo-sem-fundo.png",
+        "sizes": "192x192",
+        "type": "image/png"
+    }],
+    "start_url": "https://chamadaebd.com.br",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+}
