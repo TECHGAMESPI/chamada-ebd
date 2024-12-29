@@ -209,39 +209,72 @@
         </div>
     @endif
 
-    <!-- Botão para abrir modal de visitantes -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#visitantesModal">
-        Registrar Visitantes
-    </button>
+    @if($turma)
+        <!-- Botão para registrar/editar visitantes -->
+        @if($visitantes['total'] > 0)
+            <button type="button" class="btn btn-warning" wire:click="editVisitantes" data-toggle="modal" data-target="#visitantesModal">
+                <i class="fas fa-users"></i> 
+                Editar Visitantes ({{ $visitantes['total'] }})
+            </button>
+        @else
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#visitantesModal">
+                <i class="fas fa-users"></i> 
+                Registrar Visitantes
+            </button>
+        @endif
 
-    <!-- Modal de Visitantes -->
-    <div class="modal fade" id="visitantesModal" tabindex="-1" role="dialog" aria-labelledby="visitantesModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="visitantesModalLabel">Registrar Visitantes</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form wire:submit.prevent="storeVisitantes">
-                        <!-- Quantidade de visitantes -->
-                        <div class="form-group">
-                            <label>Quantidade de Visitantes</label>
-                            <input type="number" class="form-control" wire:model="visitante_quantidade" min="1" required>
+        <!-- Modal de Visitantes -->
+        <div class="modal fade" id="visitantesModal" tabindex="-1" role="dialog" aria-labelledby="visitantesModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="visitantesModalLabel">
+                            {{ $visitantes['total'] > 0 ? 'Editar' : 'Registrar' }} Visitantes - {{ $turma->nome_turma }}
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="current-info mb-3">
+                            <p><strong>Turma:</strong> {{ $turma->nome_turma }}</p>
+                            <p><strong>Quantidade atual:</strong> {{ $visitantes['total'] }} visitantes</p>
+                            <p><strong>Com Bíblias:</strong> {{ $visitantes['com_material'] }}</p>
                         </div>
+                        <form wire:submit.prevent="{{ $visitantes['total'] > 0 ? 'updateVisitantes' : 'storeVisitantes' }}">
+                            <!-- Quantidade de visitantes -->
+                            <div class="form-group">
+                                <label>{{ $visitantes['total'] > 0 ? 'Nova Quantidade' : 'Quantidade' }} de Visitantes</label>
+                                <input type="number" class="form-control" wire:model="visitante_quantidade" min="0" required>
+                            </div>
 
-                        <!-- Quantidade de Bíblias -->
-                        <div class="form-group">
-                            <label>Quantidade de Bíblias</label>
-                            <input type="number" class="form-control" wire:model="visitante_biblias" min="0" required>
-                        </div>
+                            <!-- Quantidade de Bíblias -->
+                            <div class="form-group">
+                                <label>{{ $visitantes['total'] > 0 ? 'Nova Quantidade' : 'Quantidade' }} de Bíblias</label>
+                                <input type="number" class="form-control" wire:model="visitante_biblias" min="0" required>
+                            </div>
 
-                        <button type="submit" class="btn btn-primary mt-3">Registrar</button>
-                    </form>
+                            <button type="submit" class="btn {{ $visitantes['total'] > 0 ? 'btn-warning' : 'btn-primary' }} mt-3">
+                                {{ $visitantes['total'] > 0 ? 'Atualizar' : 'Registrar' }}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @else
+        <div class="alert alert-warning">
+            Turma não encontrada. Por favor, selecione uma turma válida.
+        </div>
+    @endif
 </div>
+
+@push('scripts')
+<script>
+    window.addEventListener('closeVisitantesModal', event => {
+        $('#visitantesModal').modal('hide');
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+    });
+</script>
+@endpush

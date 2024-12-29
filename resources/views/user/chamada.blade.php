@@ -30,8 +30,13 @@
 
 @section('conteudo')
     @include('components.flash-message')
-    <livewire:chamada />
-
+    @if(isset($turma))
+        <livewire:chamada :turma_id="$turma->id" />
+    @else
+        <div class="alert alert-warning">
+            Nenhuma turma selecionada
+        </div>
+    @endif
 @endsection
 
 

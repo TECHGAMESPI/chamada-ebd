@@ -41,6 +41,8 @@ class Chamada extends Component
     public $visitante_quantidade;
     public $visitante_biblias;
 
+    public $turma_id;
+
     protected function rules()
     {
         return [
@@ -51,47 +53,37 @@ class Chamada extends Component
 
     protected $messages = ['data.required' => 'A data é obrigatória!'];
 
-    public function mount(Request $request)
+    public function mount($turma_id = null)
     {
-        $turmas = $this->getTurmas();
-
-        if (is_null($turmas->first())) {
-            toastr()->addError('Não foi encontrado nenhuma turma', 'Erro');
-
-            return redirect('/user/home');
+        $this->turma_id = $turma_id;
+        $this->data = date('Y-m-d');
+        if ($this->turma_id) {
+            $this->loadTurma();
         }
+    }
 
-        $turma = $turmas->first();
-
-        $this->minhasTurmas = $turmas;
-        $this->nomeTurma    = $turma->nome_turma;
-        $this->data         = date('Y-m-d');
-        $this->turmaAtual   = $turma->id;
-        $this->turma        = $turmas->first();
-
-        if ($request->id) {
-            $this->turmaAtual = $request->id;
-            $this->turma      = Turma::find($request->id);
+    protected function loadTurma()
+    {
+        if ($this->turma_id) {
+            $this->turma = \App\Models\Turma::find($this->turma_id);
         }
-
-        $this->turmas   = Turma::where(['igreja_id' => User::getIgreja()->id, 'is_active' => true])->orderBy('nome_turma', 'ASC')->get();
-        $this->livro   = false;
-        $this->material = true;
     }
 
     public function render()
     {
-        return view(
-            'livewire.chamada',
-            [
-                'alunos' => AlunoPorTurma::whereHas('user', function ($query) {
-                    $query->where('is_active', true);
-                })
-                    ->where(['turma_id' => $this->turmaAtual])->where('name', 'like', '%' . $this->search . '%')
-                    ->orderBy('name', 'ASC')
-                    ->paginate($this->perpage),
-            ]
-        );
+        $this->loadTurma();
+        $visitantes = [];
+        $turma = null;
+        
+        if ($this->turma) {
+            $visitantes = Helpers::contaVisitantes($this->turma->id, $this->data);
+            $turma = $this->turma;
+        }
+        
+        return view('livewire.chamada', [
+            'visitantes' => $visitantes,
+            'turma' => $turma
+        ]);
     }
 
     public function store(int $aluno_id, bool $absence = false)
@@ -249,5 +241,80 @@ class Chamada extends Component
         $this->resetFields();
         $this->dispatch('closeModal');
         session()->flash('message', 'Visitantes registrados com sucesso!');
+    }
+
+    public function editVisitantes()
+    {
+        $this->loadTurma();
+        if (!$this->turma) {
+            session()->flash('error', 'Turma não encontrada');
+            return;
+        }
+
+        $visitante = Visitante::where([
+            'turma_id' => $this->turma->id,
+            'data' => date('Y-m-d', strtotime($this->data))
+        ])->first();
+
+        if ($visitante) {
+            $this->visitante_quantidade = $visitante->quantidade;
+            $this->visitante_biblias = $visitante->biblias;
+        } else {
+            $this->visitante_quantidade = 0;
+            $this->visitante_biblias = 0;
+        }
+    }
+
+    public function updateVisitantes()
+    {
+        $this->validate([
+            'visitante_quantidade' => 'required|numeric|min:1',
+            'visitante_biblias' => 'required|numeric|min:0|lte:visitante_quantidade',
+        ]);
+
+        Visitante::updateOrCreate(
+            [
+                'turma_id' => $this->turma->id,
+                'data' => date('Y-m-d', strtotime($this->data))
+            ],
+            [
+                'quantidade' => $this->visitante_quantidade,
+                'biblias' => $this->visitante_biblias,
+                'igreja_id' => User::getIgreja()->id,
+            ]
+        );
+
+        $this->resetFields();
+        $this->dispatch('closeVisitantesModal');
+        session()->flash('message', 'Visitantes atualizados com sucesso!');
+    }
+
+    public function incrementVisitantes()
+    {
+        $this->visitante_quantidade++;
+    }
+
+    public function decrementVisitantes()
+    {
+        if ($this->visitante_quantidade > 1) {
+            $this->visitante_quantidade--;
+            if ($this->visitante_biblias > $this->visitante_quantidade) {
+                $this->visitante_biblias = $this->visitante_quantidade;
+            }
+        }
+    }
+
+    public function incrementBiblias()
+    {
+        if ($this->visitante_biblias < $this->visitante_quantidade) {
+            $this->visitante_biblias++;
+        }
+    }
+
+    public function decrementBiblias()
+    {
+        if ($this->visitante_biblias > 0) {
+            $this->visitante_biblias--;
+        }
     }
 }

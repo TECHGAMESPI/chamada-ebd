@@ -58,3 +58,44 @@ body {
     color: red;
     font-weight: 500;
 }
+
+.btn-warning {
+    margin-left: 10px;
+    color: #fff;
+}
+
+.btn-warning:hover {
+    color: #fff;
+}
+
+.input-group .form-control {
+    border-radius: 0;
+}
+
+.input-group .btn {
+    min-width: 40px;
+}
+
+.input-group input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+}
+
+.modal-body .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.current-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.current-info p {
+    margin-bottom: 5px;
+}
+
+.current-info strong {
+    color: #495057;
+}
