@@ -6,6 +6,7 @@ use App\Models\{Chamada, Perfil, ProfessorPorTurma, Turma, User, Visitante};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 trait Helpers
 {
@@ -82,10 +83,23 @@ trait Helpers
         try {
             $dataFormatada = Carbon::parse($data)->format('Y-m-d');
             
-            $visitantes = Visitante::where([
+            \Log::info('Buscando visitantes:', [
                 'turma_id' => $turma_id,
                 'data' => $dataFormatada
-            ])->first();
+            ]);
+            
+            DB::enableQueryLog();
+            
+            $visitantes = DB::table('visitantes')
+                ->where('turma_id', $turma_id)
+                ->where('data', $dataFormatada)
+                ->select('quantidade', 'biblias')
+                ->first();
+
+            \Log::info('Query executada:', [
+                'query' => DB::getQueryLog(),
+                'resultado' => $visitantes ?? 'Nenhum registro encontrado'
+            ]);
 
             if (!$visitantes) {
                 return [
@@ -95,12 +109,12 @@ trait Helpers
             }
 
             return [
-                'total' => $visitantes->quantidade ?? 0,
-                'com_material' => $visitantes->biblias ?? 0
+                'total' => (int)$visitantes->quantidade,
+                'com_material' => (int)$visitantes->biblias
             ];
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao contar visitantes: ' . $e->getMessage());
+            \Log::error('Erro ao contar visitantes:', ['error' => $e->getMessage()]);
             return [
                 'total' => 0,
                 'com_material' => 0

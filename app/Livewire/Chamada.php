@@ -7,7 +7,7 @@ use App\Jobs\XPJob;
 use App\Models\{AlunoPorTurma, Chamada as ChamadaModel, Turma, User, Visitante};
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, Session};
+use Illuminate\Support\Facades\{Auth, Session, DB};
 use Livewire\{Component, WithPagination};
 
 class Chamada extends Component
@@ -40,6 +40,9 @@ class Chamada extends Component
     public $visitante_nome;
     public $visitante_quantidade;
     public $visitante_biblias;
+
+    public $editando_visitante = false;
+    public $visitante_id;
 
     protected function rules()
     {
@@ -225,10 +228,11 @@ class Chamada extends Component
         }
     }
 
-    protected function resetFields()
+    public function resetFields()
     {
         $this->visitante_quantidade = null;
         $this->visitante_biblias = null;
+        $this->editando_visitante = false;
     }
 
     public function storeVisitantes()
@@ -238,16 +242,89 @@ class Chamada extends Component
             'visitante_biblias' => 'required|numeric|min:0|lte:visitante_quantidade',
         ]);
 
-        Visitante::create([
+        $visitante = Visitante::create([
             'turma_id' => $this->turma->id,
             'data' => date('Y-m-d', strtotime($this->data)),
-            'quantidade' => $this->visitante_quantidade,
-            'biblias' => $this->visitante_biblias,
+            'quantidade' => (int)$this->visitante_quantidade,
+            'biblias' => (int)$this->visitante_biblias,
             'igreja_id' => User::getIgreja()->id,
+        ]);
+
+        \Log::info('Visitantes registrados:', [
+            'quantidade' => $visitante->quantidade,
+            'biblias' => $visitante->biblias,
+            'turma' => $visitante->turma_id,
+            'data' => $visitante->data
         ]);
 
         $this->resetFields();
         $this->dispatch('closeModal');
         session()->flash('message', 'Visitantes registrados com sucesso!');
+        return redirect(request()->header('Referer'));
+    }
+
+    public function editarVisitantes($turma_id, $data)
+    {
+        $visitante = Visitante::where([
+            'turma_id' => $turma_id,
+            'data' => $data
+        ])->first();
+
+        if ($visitante) {
+            $this->visitante_id = $visitante->id;
+            $this->visitante_quantidade = $visitante->quantidade;
+            $this->visitante_biblias = $visitante->biblias;
+            $this->editando_visitante = true;
+        }
+    }
+
+    public function updateVisitantes()
+    {
+        $this->validate([
+            'visitante_quantidade' => 'required|numeric|min:1',
+            'visitante_biblias' => 'required|numeric|min:0|lte:visitante_quantidade',
+        ]);
+
+        try {
+            DB::beginTransaction();
+            
+            $visitante = Visitante::where([
+                'turma_id' => $this->turma->id,
+                'data' => date('Y-m-d', strtotime($this->data))
+            ])->first();
+            
+            if (!$visitante) {
+                throw new \Exception('Registro de visitantes não encontrado');
+            }
+
+            $visitante->quantidade = (int)$this->visitante_quantidade;
+            $visitante->biblias = (int)$this->visitante_biblias;
+            $visitante->save();
+
+            DB::commit();
+
+            \Log::info('Visitantes atualizados com sucesso:', [
+                'id' => $visitante->id,
+                'quantidade' => $visitante->quantidade,
+                'biblias' => $visitante->biblias,
+                'turma' => $visitante->turma_id,
+                'data' => $visitante->data
+            ]);
+
+            $this->resetFields();
+            $this->dispatch('closeModal');
+            session()->flash('message', 'Visitantes atualizados com sucesso!');
+            return redirect(request()->header('Referer'));
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Erro ao atualizar visitantes:', [
+                'error' => $e->getMessage(),
+                'turma_id' => $this->turma->id,
+                'data' => $this->data
+            ]);
+            session()->flash('error', 'Erro ao atualizar visitantes');
+            return null;
+        }
     }
 }

@@ -14,10 +14,10 @@
     <meta property="og:site_name" content="Chamada EBD">
     <meta property="og:description"
         content="Chamada EBD - Sistema de cadastro de alunos e registro de chamadas para Escola Bíblica Dominical.">
-    <meta property="og:url" content="https://chamadaebd.com.br/">
-    <meta property="og:image" content="https://chamadaebd.com.br/img/logo.png">
+    <meta property="og:url" content="https://chamada.techgamespi.com/">
+    <meta property="og:image" content="https://proposta.techgamespi.com/wp-content/uploads/2024/12/missao-png.png">
     <meta property="og:image:type" content="image/png">
-    <title>Chamado EBD</title>
+    <title>Chamada EBD</title>
     <link
         href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i%7CQuicksand:300,400,500,700"
         rel="stylesheet">

@@ -209,23 +209,20 @@
         </div>
     @endif
 
-    <!-- Botão para abrir modal de visitantes -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#visitantesModal">
-        Registrar Visitantes
-    </button>
-
     <!-- Modal de Visitantes -->
     <div class="modal fade" id="visitantesModal" tabindex="-1" role="dialog" aria-labelledby="visitantesModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="visitantesModalLabel">Registrar Visitantes</h5>
+                    <h5 class="modal-title" id="visitantesModalLabel">
+                        {{ $editando_visitante ? 'Editar Visitantes' : 'Registrar Visitantes' }}
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form wire:submit.prevent="storeVisitantes">
+                    <form wire:submit.prevent="{{ $editando_visitante ? 'updateVisitantes' : 'storeVisitantes' }}">
                         <!-- Quantidade de visitantes -->
                         <div class="form-group">
                             <label>Quantidade de Visitantes</label>
@@ -238,10 +235,30 @@
                             <input type="number" class="form-control" wire:model="visitante_biblias" min="0" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary mt-3">Registrar</button>
+                        <button type="submit" class="btn btn-primary mt-3">
+                            {{ $editando_visitante ? 'Atualizar' : 'Registrar' }}
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Botão para abrir modal de visitantes -->
+    <div class="mt-3">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#visitantesModal" wire:click="$set('editando_visitante', false)">
+            Registrar Visitantes
+        </button>
+
+        @php
+            $visitantes = \App\Helper\Helpers::contaVisitantes($turma->id, $data);
+        @endphp
+
+        @if($visitantes['total'] > 0)
+            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#visitantesModal" 
+                wire:click="editarVisitantes({{ $turma->id }}, '{{ $data }}')">
+                Editar Visitantes 
+            </button>
+        @endif
     </div>
 </div>
