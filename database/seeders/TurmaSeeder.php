@@ -15,12 +15,12 @@ class TurmaSeeder extends Seeder
     public function run()
     {
         DB::table('turmas')->insert([
-            'nome_turma' => 'Adolescentes',
+            'nome_turma' => 'Lucas',
 
         ]);
 
         DB::table('turmas')->insert([
-            'nome_turma' => 'Adultos',
+            'nome_turma' => 'André',
         ]);
 
         DB::table('turmas')->insert([
@@ -28,23 +28,23 @@ class TurmaSeeder extends Seeder
         ]);
 
         DB::table('turmas')->insert([
-            'nome_turma' => 'Jardim da Infância',
+            'nome_turma' => 'Simão Zelote',
         ]);
 
         DB::table('turmas')->insert([
-            'nome_turma' => 'Jovens',
+            'nome_turma' => 'Mateus',
         ]);
 
         DB::table('turmas')->insert([
-            'nome_turma' => 'Juniores',
+            'nome_turma' => 'Tomé',
         ]);
 
         DB::table('turmas')->insert([
-            'nome_turma' => 'Líderes',
+            'nome_turma' => 'Oficiais e Professoreses',
         ]);
 
         DB::table('turmas')->insert([
-            'nome_turma' => 'Maternal',
+            'nome_turma' => 'Catecúmenos',
         ]);
     }
 }
